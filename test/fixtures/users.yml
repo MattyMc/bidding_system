@@ -1,0 +1,9 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  budget: 9.99
+  blocked_budget: 9.99
+
+two:
+  budget: 9.99
+  blocked_budget: 9.99
