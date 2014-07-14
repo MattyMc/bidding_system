@@ -3,7 +3,7 @@ class CreateAuctions < ActiveRecord::Migration
     create_table :auctions do |t|
       t.integer :item_id
       t.integer :user_id
-      t.decimal :current_price, precision: 2
+      t.decimal :current_price, precision:10, scale: 2
       t.boolean :is_active
 
       t.timestamps

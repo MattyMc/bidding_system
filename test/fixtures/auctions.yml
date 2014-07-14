@@ -1,13 +1,19 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  item_id: 1
-  user_id: 1
-  current_price: 9.99
-  is_active: false
+guitar:
+  item: guitar
+  user: matt
+  current_price: 12.99
+  is_active: true
 
 two:
-  item_id: 1
-  user_id: 1
-  current_price: 9.99
+  item_id: 2
+  user_id: 2
+  current_price: 0
+  is_active: true
+
+closed_auction:
+  item: teddy_bear
+  user: matt
+  current_price: 20.20
   is_active: false

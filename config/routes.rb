@@ -1,4 +1,9 @@
 BiddingSystem::Application.routes.draw do
+  get "auction/finish"
+  get "add_user" => "user#add_user"
+  get "add_item" => "user#add_item"
+  get "bid" => "user#bid"
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

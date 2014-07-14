@@ -1,9 +1,17 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  budget: 9.99
-  blocked_budget: 9.99
+matt:
+  budget: 60.50
+  blocked_budget: 25.00
 
-two:
-  budget: 9.99
-  blocked_budget: 9.99
+pam:
+  budget: 29.99
+  blocked_budget: 0
+
+jay:
+  budget: 39.99
+  blocked_budget: 0
+
+olivia:
+  budget: 49.99
+  blocked_budget: 0

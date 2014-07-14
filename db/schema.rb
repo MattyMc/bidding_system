@@ -19,7 +19,7 @@ ActiveRecord::Schema.define(version: 20140707175028) do
   create_table "auctions", force: true do |t|
     t.integer  "item_id"
     t.integer  "user_id"
-    t.decimal  "current_price", precision: 2, scale: 0
+    t.decimal  "current_price", precision: 10, scale: 2
     t.boolean  "is_active"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -27,15 +27,15 @@ ActiveRecord::Schema.define(version: 20140707175028) do
 
   create_table "items", force: true do |t|
     t.string   "item_name"
-    t.decimal  "start_price", precision: 2, scale: 0
+    t.decimal  "start_price", precision: 10, scale: 2
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "user_id"
   end
 
   create_table "users", force: true do |t|
-    t.decimal  "budget",         precision: 2, scale: 0
-    t.decimal  "blocked_budget", precision: 2, scale: 0
+    t.decimal  "budget",         precision: 10, scale: 2
+    t.decimal  "blocked_budget", precision: 10, scale: 2
     t.datetime "created_at"
     t.datetime "updated_at"
   end
