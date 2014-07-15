@@ -1,6 +1,9 @@
 require 'test_helper'
 
 class UserTest < ActiveSupport::TestCase
+	# Since we are using transactional fixtures
+	self.use_transactional_fixtures = false 
+
 	should have_many :items
 	should have_many :auctions
 
@@ -23,8 +26,18 @@ class UserTest < ActiveSupport::TestCase
     assert user.save 
   end
 
-  test "should raise an error if no auction found" do
-  	assert_raise(ActiveRecord::RecordNotFound) { @matt.bid 20, 2 }
+  test "should not accept bid if no auction found" do
+  	assert_not @matt.bid 20, 2
+  end
+
+  test "should return insufficient funds user's budget insufficient" do
+  	@pam.bid @guitar.id, 30.00
+  	assert_equal "insufficient funds", @pam.errors[:error].first
+  end
+
+  test "should not allow bid if user's budget insufficient" do
+  	bid_result = @pam.bid @guitar.id, 30.00
+  	assert_not bid_result
   end
 
   test "should return false if auction is closed" do 

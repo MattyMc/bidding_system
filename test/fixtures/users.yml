@@ -6,7 +6,7 @@ matt:
 
 pam:
   budget: 29.99
-  blocked_budget: 0
+  blocked_budget: 15
 
 jay:
   budget: 39.99
