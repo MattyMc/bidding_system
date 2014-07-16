@@ -3,11 +3,27 @@ class User < ActiveRecord::Base
 	has_many :auctions
 
 	validates :budget, :blocked_budget, presence: true
+	validates_each :budget, :blocked_budget, on: :create do |record, attr, value|
+		v = value.to_f*100
+		record.errors.add attr, "has too many decimal places" if v > v.to_i
+	end
 	validates :budget, numericality: { greater_than_or_equal_to: 0 }
 	validates :blocked_budget, numericality: { greater_than_or_equal_to: 0 }
 
 	class InvalidBid < StandardError
 	end
+
+	# Adds a new user to the database
+	def self.add_user user_id, budget
+		# Errors occur instantiating BigDecimal object from a float
+		budget = budget.to_s unless budget.class == String 
+		budget = BigDecimal.new budget
+
+		User.create! id: user_id, budget: budget, blocked_budget: 0
+	end
+
+	# Adds a new item and corresponding auction to the database
+	# def 
 
 	# Method returns true if bid is accepted, false if bid is not accepted
 	# Errors are stored in class instance (self.errors[:error])
@@ -18,63 +34,52 @@ class User < ActiveRecord::Base
 
 		# Note: Only exceptions will forced a transaction rollback. Only use functions that will throw 
 		# exceptions if they fail (such as those ending in '!'), and write additional exceptions where required. 
-		begin
-			
-			User.transaction(isolation: :repeatable_read) do
-
-				# Check whether auction is open. Using 'banged' version of find since it will throw an exception
-				@auction = Auction.includes(:user).find_by_item_id! item_id
-				raise InvalidBid unless auction_is_active? @auction
-				
-				# Check whether users funds are too low or bid is too low
-				raise InvalidBid unless self.sufficient_funds? bid_amount
-				raise InvalidBid unless self.bid_amount_above_current_price? @auction.current_price, bid_amount
-
-				# Decrease user's budget & increase blocked_budget
-				self.budget -= bid_amount
-				self.blocked_budget += bid_amount
-
-				# Restore money to the former highest bidder
-				@former_highest_bidder = @auction.user
-				@former_highest_bidder.budget += @auction.current_price
-				@former_highest_bidder.blocked_budget -= @auction.current_price
-				@former_highest_bidder.save!
-
-				# Update Auction with new bid
-				@auction.user = self
-				@auction.current_price = bid_amount
-				@auction.save!
-
-				# Save user
-				self.save!
-				return true
-			end
 		
-		rescue StandardError=> e
-			return false
-		end
+		
+		User.transaction(isolation: :repeatable_read) do
 
+			# Check whether auction is open. Using 'banged' version of find since it will throw an exception
+			@auction = Auction.includes(:user).find_by_item_id! item_id
+			raise InvalidBid, "auction is closed" unless auction_is_active? @auction
+			
+			# Check whether users funds are too low or bid is too low
+			raise InvalidBid, "insufficient funds" unless self.sufficient_funds? bid_amount
+			raise InvalidBid, "invalid amount" unless self.bid_amount_above_current_price? @auction.current_price, bid_amount
+
+			# Decrease user's budget & increase blocked_budget
+			self.budget -= bid_amount
+			self.blocked_budget += bid_amount
+
+			# Restore money to the former highest bidder
+			@former_highest_bidder = @auction.user == self ? self : @auction.user
+			@former_highest_bidder.budget += @auction.current_price
+			@former_highest_bidder.blocked_budget -= @auction.current_price
+			@former_highest_bidder.save! unless @former_highest_bidder == self
+
+			# Update Auction with new bid
+			@auction.user = self
+			@auction.current_price = bid_amount
+			@auction.save!
+
+			# Save user
+			self.save!
+			return true
+		end
 	end
 
 
 	def auction_is_active? auction
 		return true unless !auction.is_active
-
-		self.errors[:error] << "auction is closed"
 		false
 	end
 
 	def bid_amount_above_current_price? current_price, bid_amount
 		return true if bid_amount > current_price
-		
-		self.errors[:error] << "invalid amount"
 		false
 	end
 
 	def sufficient_funds? bid_amount
 		return true if  self.budget >= bid_amount 
-		
-		self.errors[:error] << "insufficient funds"
 		false
 	end
 end
