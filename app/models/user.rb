@@ -23,9 +23,17 @@ class User < ActiveRecord::Base
 	end
 
 	# Adds a new item and corresponding auction to the database
-	# def 
+	def add_item item_name, start_price
+		# Errors occur instantiating BigDecimal object from a float
+		start_price = start_price.to_s unless start_price.class == String 
+		start_price = BigDecimal.new start_price
 
-	# Method returns true if bid is accepted, false if bid is not accepted
+  		@item = Item.create! user:self, name:item_name, start_price:start_price
+  	
+		Auction.create! item: @item, user: self, current_price: @item.start_price, is_active:true
+	end
+
+	# Method returns true if bid is accepted, false if bid is not accepted (or raises exception)
 	# Errors are stored in class instance (self.errors[:error])
 	def bid item_id, amount
 		# Errors occur instantiating BigDecimal object from a float
@@ -65,6 +73,7 @@ class User < ActiveRecord::Base
 			self.save!
 			return true
 		end
+		return false
 	end
 
 

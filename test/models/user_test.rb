@@ -158,6 +158,31 @@ class UserTest < ActiveSupport::TestCase
   	assert_equal @pam, auctions(:guitar).user
   end
 
+	##################
+	#### Tests for User.add_item item_name, start_price
+	##################
 
+  test "should successfully add an item for user" do
+  	assert_not Item.find_by_name "pistol"
+  	assert @matt.add_item("pistol", "22.39")
+    assert Item.find_by_name "pistol"
+    assert_equal 22.39, Item.find_by_name("pistol").start_price
+  end
 
+  test "should add item with definded attributes" do
+  	assert_not Item.find_by_name "pistol"
+  	@matt.add_item "pistol", "22.34"
+  	item = Item.find_by_name "pistol"
+  	assert_equal "pistol", item.name
+  	assert_equal 22.34, item.start_price
+  end
+
+  test "should create a new auction with defined specified fields" do
+  	@matt.add_item "rifle", "22.39"
+  	auction = Auction.find_by_item_id Item.find_by_name("rifle").id
+  	assert auction
+  	assert_equal @matt, auction.user
+  	assert_equal 22.39, auction.current_price
+  	assert auction.is_active
+  end
 end

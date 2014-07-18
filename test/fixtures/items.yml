@@ -1,21 +1,21 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 guitar:
-  item_name: Guitar
+  name: Guitar
   user: matt
   start_price: 12.99
 
 banjo:
-  item_name: Banjo
+  name: Banjo
   user: matt
   start_price: 1
 
 xbox:
-  item_name: XBox
+  name: XBox
   user: pam
   start_price: 0
 
 teddy_bear:
-  item_name: Teddy
+  name: Teddy
   user: matt
   start_price: 10
