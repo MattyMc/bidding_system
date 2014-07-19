@@ -1,6 +1,7 @@
 class User < ActiveRecord::Base
 	has_many :items
 	has_many :auctions
+	has_many :best_bids, :class_name => 'Auction', :foreign_key => 'best_bidder_id'
 
 	validates :budget, :blocked_budget, presence: true
 	validates_each :budget, :blocked_budget, on: :create do |record, attr, value|
@@ -30,7 +31,7 @@ class User < ActiveRecord::Base
 
   		@item = Item.create! user:self, name:item_name, start_price:start_price
   	
-		Auction.create! item: @item, user: self, current_price: @item.start_price, is_active:true
+		Auction.create! item: @item, user: self, current_price: @item.start_price, is_active:true, best_bidder: nil
 	end
 
 	# Method returns true if bid is accepted, false if bid is not accepted (or raises exception)
@@ -59,13 +60,13 @@ class User < ActiveRecord::Base
 			self.blocked_budget += bid_amount
 
 			# Restore money to the former highest bidder
-			@former_highest_bidder = @auction.user == self ? self : @auction.user
+			@former_highest_bidder = @auction.best_bidder == self ? self : @auction.best_bidder # avoid two instances
 			@former_highest_bidder.budget += @auction.current_price
 			@former_highest_bidder.blocked_budget -= @auction.current_price
-			@former_highest_bidder.save! unless @former_highest_bidder == self
+			@former_highest_bidder.save! unless @former_highest_bidder == self # avoid transaction issues
 
 			# Update Auction with new bid
-			@auction.user = self
+			@auction.best_bidder = self
 			@auction.current_price = bid_amount
 			@auction.save!
 

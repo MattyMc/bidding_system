@@ -46,10 +46,14 @@ class AuctionTest < ActiveSupport::TestCase
    	assert_equal data[:price], @guitar_auction.auction_data[:price]
    end
 
-   test "Auctions.snapshot should return an array" do
-   	auctions = Auction.snapshot
-   	assert auctions.class == Array
-   end
+   # test "Auctions.snapshot should return an array" do
+   # 	auctions = Auction.snapshot
+   # 	assert auctions.class == Array
+   # end
 
-   test "Auctions.snapshot should contain guitar auction"
+   # test "Auctions.snapshot should contain guitar auction"
+   # 	auctions = Auction.snapshot
+   # 	guitar_auction = {id: @guitar_auction.id, user_id: @matt.id, is_active: true, best_bidder_id: }
+   # 	assert auctions.contains {id: }
+   # end
 end

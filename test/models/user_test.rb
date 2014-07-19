@@ -19,6 +19,7 @@ class UserTest < ActiveSupport::TestCase
 
 		@teddy_bear = items(:teddy_bear) # This auction is closed
 		@guitar = items(:guitar) # This auction is open, price is $12.99 (matt)
+    @hockey_stick = items(:hockey_stick)
 	end
 
 	##################
@@ -118,21 +119,21 @@ class UserTest < ActiveSupport::TestCase
   	assert bid_result
   end
 
-  test "should reduce bidder's budget after bid" do
+  test "should reduce best_bidder's budget after bid" do
   	pams_budget = @pam.budget
   	@pam.bid @guitar.id, 13.00
   	pams_budget -= 13.00
   	assert_equal pams_budget, @pam.reload.budget
   end
 
-  test "should increase bidder's blocked_budget" do
+  test "should increase new bidder's blocked_budget" do
   	pams_blocked_budget = @pam.blocked_budget
   	@pam.bid @guitar.id, 13.00
   	pams_blocked_budget += 13.00
   	assert_equal pams_blocked_budget, @pam.reload.blocked_budget
   end
 
-  test "should decrease old highest bidder's blocked budget" do
+  test "should decrease previous best_bidder's blocked budget" do
   	matts_old_bid = auctions(:guitar).current_price
   	matts_blocked_budget = @matt.blocked_budget
   	@pam.bid @guitar.id, 13.00
@@ -140,7 +141,7 @@ class UserTest < ActiveSupport::TestCase
   	assert_equal matts_blocked_budget.to_f, @matt.reload.blocked_budget.to_f
   end
 
-  test "should increase old highest bidder's budget" do
+  test "should increase previous best_bidder's budget" do
   	matts_old_bid = auctions(:guitar).current_price
   	matts_budget = @matt.budget
   	@pam.bid @guitar.id, 13.00
@@ -153,9 +154,14 @@ class UserTest < ActiveSupport::TestCase
   	assert_equal 13.00, auctions(:guitar).current_price
   end
 
-  test "should update new auction highest_bidder" do
+  test "should not update new auction user" do
   	@pam.bid @guitar.id, 13.00
-  	assert_equal @pam, auctions(:guitar).user
+  	assert_equal @matt, auctions(:guitar).user
+  end
+
+  test "should update new auction's best_bidder" do
+    @pam.bid @guitar.id, 13.00
+    assert_equal @pam, auctions(:guitar).best_bidder
   end
 
 	##################
