@@ -11,6 +11,8 @@ class User < ActiveRecord::Base
 	validates :budget, numericality: { greater_than_or_equal_to: 0 }
 	validates :blocked_budget, numericality: { greater_than_or_equal_to: 0 }
 
+	serialize :owned_item_ids, Array
+
 	class InvalidBid < StandardError
 	end
 
@@ -49,7 +51,7 @@ class User < ActiveRecord::Base
 
 			# Check whether auction is open. Using 'banged' version of find since it will throw an exception
 			@auction = Auction.includes(:user).find_by_item_id! item_id
-			raise InvalidBid, "auction is closed" unless auction_is_active? @auction
+			raise InvalidBid, "auction is closed" unless @auction.is_active?
 			
 			# Check whether users funds are too low or bid is too low
 			raise InvalidBid, "insufficient funds" unless self.sufficient_funds? bid_amount
@@ -77,10 +79,12 @@ class User < ActiveRecord::Base
 		return false
 	end
 
-
-	def auction_is_active? auction
-		return true unless !auction.is_active
-		false
+	def self.snapshot
+		users = []
+		User.all.each do |u|
+			users.push u.attributes
+		end
+		users
 	end
 
 	def bid_amount_above_current_price? current_price, bid_amount

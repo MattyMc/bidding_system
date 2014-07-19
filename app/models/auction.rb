@@ -10,7 +10,16 @@ class Auction < ActiveRecord::Base
 	def finish
 		# TODO: Add the item to the user's owned_items array
 		if self.is_active
-			self.update! is_active: false
+			# Eliminate race conditions by using :repeatable_read isolation level
+			Auction.transaction(isolation: :repeatable_read) do
+				
+				# Update the winning user 
+				self.best_bidder.blocked_budget -= self.current_price.to_f
+				self.best_bidder.owned_item_ids.push self.item.id
+				self.best_bidder.save!
+
+				self.update! is_active: false
+			end
 		else
 			self.errors.add :error, "auction is already closed"
 			return false
@@ -26,6 +35,11 @@ class Auction < ActiveRecord::Base
 	end
 
 
-	# def self.snapshot
-	# end
+	def self.snapshot
+		auctions = []
+		Auction.all.each do |a|
+			auctions.push a.attributes 
+		end
+		auctions
+	end
 end

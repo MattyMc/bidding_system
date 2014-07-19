@@ -191,4 +191,21 @@ class UserTest < ActiveSupport::TestCase
   	assert_equal 22.39, auction.current_price
   	assert auction.is_active
   end
+
+  ##################
+  #### Tests for Auction.snapshot
+  ##################
+
+  test "should return an array" do
+    users = User.snapshot
+    assert users.class == Array
+  end
+
+  test "User.shapshot should return id, budget, blocked_budget and owned_item_ids" do
+    user = User.snapshot[0]
+    assert user.include? "id"
+    assert user.include? "budget"
+    assert user.include? "blocked_budget"
+    assert user.include? "owned_item_ids"
+  end
 end
