@@ -23,4 +23,8 @@ class Auction < ActiveRecord::Base
 		data[:price] = self.current_price
 		return data
 	end
+
+
+	# def self.snapshot
+	# end
 end

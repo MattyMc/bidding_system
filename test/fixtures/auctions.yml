@@ -6,12 +6,6 @@ guitar:
   current_price: 12.99
   is_active: true
 
-two:
-  item_id: 2
-  user_id: 2
-  current_price: 0
-  is_active: true
-
 closed_auction:
   item: teddy_bear
   user: matt

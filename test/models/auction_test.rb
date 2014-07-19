@@ -14,6 +14,7 @@ class AuctionTest < ActiveSupport::TestCase
   def setup
   	@guitar_auction = auctions(:guitar)
   	@closed_auction = auctions(:closed_auction)
+  	@matt = users(:matt)
   end
 
   	##################
@@ -44,4 +45,11 @@ class AuctionTest < ActiveSupport::TestCase
    	assert_equal data[:winner_id], @guitar_auction.auction_data[:winner_id]
    	assert_equal data[:price], @guitar_auction.auction_data[:price]
    end
+
+   test "Auctions.snapshot should return an array" do
+   	auctions = Auction.snapshot
+   	assert auctions.class == Array
+   end
+
+   test "Auctions.snapshot should contain guitar auction"
 end
