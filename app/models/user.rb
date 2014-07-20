@@ -82,7 +82,7 @@ class User < ActiveRecord::Base
 	def self.snapshot
 		users = []
 		User.all.each do |u|
-			users.push u.attributes
+			users.push u.attributes.except("created_at", "updated_at")
 		end
 		users
 	end

@@ -190,6 +190,7 @@ class UserTest < ActiveSupport::TestCase
   	assert_equal @matt, auction.user
   	assert_equal 22.39, auction.current_price
   	assert auction.is_active
+    assert auction.best_bidder.nil?
   end
 
   ##################
@@ -208,4 +209,12 @@ class UserTest < ActiveSupport::TestCase
     assert user.include? "blocked_budget"
     assert user.include? "owned_item_ids"
   end
+
+  test "User.snapshot should not return created_at or updated_at" do
+    users = User.snapshot
+    users.each do |user|
+      assert user["created_at"].nil?
+      assert user["updated_at"].nil?
+    end
+   end
 end

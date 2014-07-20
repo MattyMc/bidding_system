@@ -74,6 +74,14 @@ class AuctionTest < ActiveSupport::TestCase
 
    test "Auction.snapshot should contain guitar auction" do
    	auctions = Auction.snapshot
-   	assert auctions.include? @guitar_auction.attributes
+   	assert auctions.include? @guitar_auction.attributes.except("created_at", "updated_at")
+   end
+
+   test "Auction.snapshot should not return created_at or updated_at" do
+    auctions = Auction.snapshot
+    auctions.each do |auction|
+      assert auction["created_at"].nil?
+      assert auction["updated_at"].nil?
+    end
    end
 end

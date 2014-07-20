@@ -38,7 +38,7 @@ class Auction < ActiveRecord::Base
 	def self.snapshot
 		auctions = []
 		Auction.all.each do |a|
-			auctions.push a.attributes 
+			auctions.push a.attributes.except("created_at", "updated_at") 
 		end
 		auctions
 	end
