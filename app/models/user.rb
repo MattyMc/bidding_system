@@ -3,7 +3,7 @@ class User < ActiveRecord::Base
 	has_many :auctions
 	has_many :best_bids, :class_name => 'Auction', :foreign_key => 'best_bidder_id'
 
-	validates :budget, :blocked_budget, presence: true
+	validates :id, :budget, :blocked_budget, presence: true
 	validates_each :budget, :blocked_budget, on: :create do |record, attr, value|
 		v = value.to_f*100
 		record.errors.add attr, "has too many decimal places" if v > v.to_i
@@ -14,15 +14,6 @@ class User < ActiveRecord::Base
 	serialize :owned_item_ids, Array
 
 	class InvalidBid < StandardError
-	end
-
-	# Adds a new user to the database
-	def self.add_user user_id, budget
-		# Errors occur instantiating BigDecimal object from a float
-		budget = budget.to_s unless budget.class == String 
-		budget = BigDecimal.new budget
-
-		User.create! id: user_id, budget: budget, blocked_budget: 0
 	end
 
 	# Adds a new item and corresponding auction to the database
@@ -85,6 +76,31 @@ class User < ActiveRecord::Base
 			users.push u.attributes.except("created_at", "updated_at")
 		end
 		users
+	end
+
+	# Will format JSON response in the following format
+	# {
+ 	#    result : "success" | "fail"
+ 	#    data : {}
+ 	#    error : nil | error_content
+	# }
+	# Where: error_content is a string of error messages
+	#        data hash contains user information
+	def response_json
+		response = {}
+		if self.errors.empty?
+			response[:result] = "success"
+			response[:data] = self.attributes.except("created_at", "updated_at")
+		else
+			response[:result] = "error"
+			response[:error] = self.errors.full_messages.join ", "
+		end
+		response.to_json
+	end
+
+	def response_status
+		return :bad_request if !self.errors.empty? # 400 
+		return :ok if self.errors.empty?
 	end
 
 	def bid_amount_above_current_price? current_price, bid_amount

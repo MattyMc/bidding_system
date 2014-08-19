@@ -27,31 +27,31 @@ class UserTest < ActiveSupport::TestCase
 	##################
 
   test "should create new user" do
-  	user = User.new budget: 12.95, blocked_budget: 0
+  	user = User.new id:1234, budget: 12.95, blocked_budget: 0
     assert user.save 
   end
 
   test "should return user if completed successfully" do
-  	a = User.add_user 20, "30.50"
+  	a = User.create id:20, budget:30.50, blocked_budget:0
   	assert_equal a, User.find_by_id(20)
   end
 
   test "should save a new user" do
-  	m = User.add_user 20, 500.25
+  	m = User.create id:20, budget:500.25, blocked_budget:0
   	assert User.find(20)
   	assert User.find(20).budget.to_f == 500.25
   end
 
-  test "should not allow a user with a used id to be added" do
-  	assert_raise(ActiveRecord::RecordNotUnique) {User.add_user @pam.id, 50}
+  test "should not allow a user with a duplicate id to be added" do
+  	assert_raise(ActiveRecord::RecordNotUnique) {User.create! id:@pam.id, budget:50, blocked_budget:0}
   end
 
   test "should not allow a user with invalid budget" do
-  	assert_raise(ActiveRecord::RecordInvalid) { User.add_user 52, 21.233 }
+  	assert_raise(ActiveRecord::RecordInvalid) { User.create! id:52, budget:21.233, blocked_budget:0 }
   end
 
   test "should not allow add_user to have three decimal places" do
-  	exception = assert_raise(ActiveRecord::RecordInvalid) {User.add_user 52, 21.233}
+  	exception = assert_raise(ActiveRecord::RecordInvalid) {User.create! id:52, budget:21.233, blocked_budget:0}
   	assert_equal "Validation failed: Budget has too many decimal places", exception.message
   end
   	##################

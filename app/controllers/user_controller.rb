@@ -1,23 +1,11 @@
 class UserController < ApplicationController
   before_action :form_response_map
 
+  # QUESTION: Is this worth moving to the model? 
+  # QUESTION: Does a method this simple necessitate comments/documentation?
   def add_user
-  	logger.warn user_params
-  	@user = User.where(:id => params["user_id"]).first_or_initialize
-  	response_map = {}
-
-  	if @user.new_record?
-  		@user.budget = params["budget"]
-  		@user.blocked_budget = 0
-		@user.save
-		response_map[:result] = "success"
-	else
-		logger.warn @user.errors.messages
-		response_map[:result] = "error"
-		response_map[:error] = "user exists"
-	end
-
-	render json: response_map.to_json
+    user = User.create id:params["user_id"], budget:params["budget"], blocked_budget:0
+    render json: user.response_json, status: user.response_status
   end
 
   def add_item
@@ -41,7 +29,7 @@ class UserController < ApplicationController
   def bid
   	@user = User.find params[:user_id]
 
-  	response = @user.bid params[:item_id] params[:amount]
+  	response = @user.bid params[:item_id], params[:amount]
     
   	if response.class == "String"
   		@response_map[:result] = "error"
