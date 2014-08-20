@@ -55,10 +55,9 @@ class User < ActiveRecord::Base
 		amount = amount.to_s unless amount.class == String 
 		bid_amount = BigDecimal.new amount
 
-		# Note: Only exceptions will forced a transaction rollback. Only use functions that will throw 
+		# Note: Only exceptions will force a transaction rollback. Only use functions that will throw 
 		# exceptions if they fail (such as those ending in '!'), and write additional exceptions where required. 
-		
-		
+
 		User.transaction(isolation: :repeatable_read) do
 
 			# Check whether auction is open. Using 'banged' version of find since it will throw an exception
@@ -86,9 +85,8 @@ class User < ActiveRecord::Base
 
 			# Save user
 			self.save!
-			return true
 		end
-		return false
+		return self
 	end
 
 	def self.snapshot
@@ -101,7 +99,7 @@ class User < ActiveRecord::Base
 
 	# Will format JSON response in the following format
 	# {
- 	#    result : "success" | "fail"
+ 	#    result : "success" | "error"
  	#    data : {}
  	#    error : nil | error_content
 	# }
@@ -113,7 +111,7 @@ class User < ActiveRecord::Base
 			response[:result] = "success"
 			response[:data] = self.attributes.except("created_at", "updated_at")
 		else
-			response[:result] = "fail"
+			response[:result] = "error"
 			response[:error] = self.errors.full_messages.join ", "
 		end
 		response
@@ -125,7 +123,7 @@ class User < ActiveRecord::Base
 			response[:result] = "success"
 			response[:data] = Item.find_by_name(item_name).id
 		else
-			response[:result] = "fail"
+			response[:result] = "error"
 			response[:error] = self.errors.full_messages.join ", "
 		end
 		response

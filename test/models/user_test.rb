@@ -54,7 +54,7 @@ class UserTest < ActiveSupport::TestCase
   	exception = assert_raise(ActiveRecord::RecordInvalid) {User.create! id:52, budget:21.233, blocked_budget:0}
   	assert_equal "Validation failed: Budget has too many decimal places", exception.message
   end
-  	##################
+  ##################
 	#### Tests for User.bid item_id, amount
 	##################
 
