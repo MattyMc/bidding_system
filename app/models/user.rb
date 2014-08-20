@@ -17,15 +17,36 @@ class User < ActiveRecord::Base
 	end
 
 	# Adds a new item and corresponding auction to the database
-	def add_item item_name, start_price
-		# Errors occur instantiating BigDecimal object from a float
-		start_price = start_price.to_s unless start_price.class == String 
-		start_price = BigDecimal.new start_price
+	def create_item_and_auction item_name, start_price
+		item = Item.create user:self, name:item_name, start_price:start_price
+		# Check for errors with item - if errors exist add them to the user and return
+		if !item.errors.empty? 
+			item.errors.messages.each do |key, val| 
+				self.errors.add(key, val[0])
+			end
+			return self
+		end
 
-  		@item = Item.create! user:self, name:item_name, start_price:start_price
-  	
-		Auction.create! item: @item, user: self, current_price: @item.start_price, is_active:true, best_bidder: nil
+		# create corresponding auction, check for errors as above
+		auction = Auction.create item_id:item.id, user:item.user, current_price:item.start_price, is_active:true
+		if !auction.errors.empty? 
+			auction.errors.messages.each do |key, val| 
+				self.errors.add(key, val[0])
+			end
+			return self
+		end
+
+		return self
 	end
+	# def add_item item_name, start_price
+	# 	# Errors occur instantiating BigDecimal object from a float
+	# 	start_price = start_price.to_s unless start_price.class == String 
+	# 	start_price = BigDecimal.new start_price
+
+ #  		@item = Item.create! user:self, name:item_name, start_price:start_price
+  	
+	# 	Auction.create! item: @item, user: self, current_price: @item.start_price, is_active:true, best_bidder: nil
+	# end
 
 	# Method returns true if bid is accepted, false if bid is not accepted (or raises exception)
 	# Errors are stored in class instance (self.errors[:error])
@@ -92,10 +113,22 @@ class User < ActiveRecord::Base
 			response[:result] = "success"
 			response[:data] = self.attributes.except("created_at", "updated_at")
 		else
-			response[:result] = "error"
+			response[:result] = "fail"
 			response[:error] = self.errors.full_messages.join ", "
 		end
-		response.to_json
+		response
+	end
+
+	def response_json_add_item item_name
+		response = {}
+		if self.errors.empty?
+			response[:result] = "success"
+			response[:data] = Item.find_by_name(item_name).id
+		else
+			response[:result] = "fail"
+			response[:error] = self.errors.full_messages.join ", "
+		end
+		response
 	end
 
 	def response_status

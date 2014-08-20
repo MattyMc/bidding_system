@@ -170,27 +170,77 @@ class UserTest < ActiveSupport::TestCase
 
   test "should successfully add an item for user" do
   	assert_not Item.find_by_name "pistol"
-  	assert @matt.add_item("pistol", "22.39")
+  	assert @matt.create_item_and_auction("pistol", "22.39")
     assert Item.find_by_name "pistol"
     assert_equal 22.39, Item.find_by_name("pistol").start_price
+    assert @matt.errors.empty?
   end
 
   test "should add item with definded attributes" do
   	assert_not Item.find_by_name "pistol"
-  	@matt.add_item "pistol", "22.34"
+  	@matt.create_item_and_auction "pistol", 22.34
   	item = Item.find_by_name "pistol"
   	assert_equal "pistol", item.name
   	assert_equal 22.34, item.start_price
+    assert @matt.errors.empty?
   end
 
   test "should create a new auction with defined specified fields" do
-  	@matt.add_item "rifle", "22.39"
+  	@matt.create_item_and_auction "rifle", "22.39"
   	auction = Auction.find_by_item_id Item.find_by_name("rifle").id
   	assert auction
   	assert_equal @matt, auction.user
   	assert_equal 22.39, auction.current_price
   	assert auction.is_active
     assert auction.best_bidder.nil?
+    assert @matt.errors.empty?
+  end
+
+  test "should not create a new item when item_name is empty" do
+    @matt.create_item_and_auction "", "22.39"
+    assert !@matt.errors.empty?
+    assert @matt.errors.full_messages.include? "Name can't be blank"
+    auction = Auction.find_by_current_price 22.39
+    assert auction.nil?
+    item = Item.find_by_start_price 22.39
+    assert item.nil?
+  end
+
+  test "should not create a new item when item_name is nil" do
+    @matt.create_item_and_auction nil, "22.39"
+    assert !@matt.errors.empty?
+    assert @matt.errors.full_messages.include? "Name can't be blank"
+    auction = Auction.find_by_current_price 22.39
+    assert auction.nil?
+    item = Item.find_by_start_price 22.39
+    assert item.nil?
+  end
+
+  test "should not create a new item when start_price is invalid" do
+    @matt.create_item_and_auction "blah", 1.123
+    assert !@matt.errors.empty?
+    auction = Auction.find_by_current_price 1.123
+    assert auction.nil?
+    item = Item.find_by_name "blah"
+    assert item.nil?
+  end
+
+  test "should not create a new item when start_price is nil" do
+    @matt.create_item_and_auction "blah", nil
+    assert !@matt.errors.empty?
+    auction = Auction.find_by_current_price nil
+    assert auction.nil?
+    item = Item.find_by_name "blah"
+    assert item.nil?
+  end
+
+  test "should not create a new item when start_price is empty" do
+    @matt.create_item_and_auction 11.23, ""
+    assert !@matt.errors.empty?
+    auction = Auction.find_by_current_price 11.23
+    assert auction.nil?
+    item = Item.find_by_start_price 11.23
+    assert item.nil?
   end
 
   ##################

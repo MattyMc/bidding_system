@@ -1,29 +1,18 @@
 class UserController < ApplicationController
-  before_action :form_response_map
+  before_action :find_user, only: [:add_item]
 
   # QUESTION: Is this worth moving to the model? 
   # QUESTION: Does a method this simple necessitate comments/documentation?
   def add_user
     user = User.create id:params["user_id"], budget:params["budget"], blocked_budget:0
-    render json: user.response_json, status: user.response_status
+    render json:user.response_json, status: user.response_status
   end
 
+  # TODO: FIX RESPONSE OF THIS FUNCTION TO FIT EXAMPLE
+  # TODO: MOVE EVERYTHING BELOW TO MODEL. REFACTOR MODEL
   def add_item
-  	logger.warn user_params
-  	@item = Item.new(user_id: params["user_id"], item_name: params["item_name"], start_price: params["start_price"])
-  	response_map = {}
-
-  	if @item.new_record?
-  		@item.save
-		Auction.create! item_id: @item.id, user: @item.user, current_price: @item.start_price, is_active:true
-
-		response_map[:result] = "success"
-		response_map[:data] = @item.id
-	else
-		response_map[:result] = "error"
-	end
-
-	render json: response_map.to_json
+    @user.create_item_and_auction params["item_name"], params["start_price"]
+	  render json:@user.response_json_add_item(params["item_name"]), status: @user.response_status
   end
 
   def bid
@@ -45,8 +34,11 @@ class UserController < ApplicationController
   	params.permit!
   end
 
-  def form_response_map
-  	@response_map = {}
-  	@response_map[:result] = "success"
+  def find_user
+  	@user = User.find_by_id params["user_id"]
+    if @user.nil? 
+      response = {result: "fail", error: "could not find user"}
+      render json:response.to_json, status: :bad_request
+    end 
   end
 end
