@@ -125,4 +125,16 @@ class UserControllerTest < ActionController::TestCase
     assert_nil json_response["error"]
   end
 
+  ##################
+  #### Tests for snapshot
+  ##################
+  test "should respond with result, data some users and auctions" do
+    get :snapshot
+    assert_not_nil json_response["data"]
+    assert_not_nil json_response["data"]["auctions"]
+    assert_not_nil json_response["data"]["users"]
+    assert_equal "success", json_response["result"]
+  end
+
+
 end

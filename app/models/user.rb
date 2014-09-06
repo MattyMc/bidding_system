@@ -10,13 +10,15 @@ class User < ActiveRecord::Base
 	end
 	validates :budget, numericality: { greater_than_or_equal_to: 0 }
 	validates :blocked_budget, numericality: { greater_than_or_equal_to: 0 }
+	# TODO: Validate that each owned_item is unique
 
-	serialize :owned_item_ids, Array
+	serialize :owned_item_ids, Array  # treat property as array
 
 	class InvalidBid < StandardError
 	end
 
 	# Adds a new item and corresponding auction to the database
+	# TODO: ROLL THIS INTO ONE TRANSACTION
 	def create_item_and_auction item_name, start_price
 		item = Item.create user:self, name:item_name, start_price:start_price
 		# Check for errors with item - if errors exist add them to the user and return
@@ -73,11 +75,12 @@ class User < ActiveRecord::Base
 			self.blocked_budget += bid_amount
 
 			# Restore money to the former highest bidder
-			@former_highest_bidder = @auction.best_bidder == self ? self : @auction.best_bidder # avoid two instances
-			@former_highest_bidder.budget += @auction.current_price
-			@former_highest_bidder.blocked_budget -= @auction.current_price
-			@former_highest_bidder.save! unless @former_highest_bidder == self # avoid transaction issues
-
+			unless @auction.best_bidder.nil?
+				@former_highest_bidder = @auction.best_bidder == self ? self : @auction.best_bidder # avoid two instances
+				@former_highest_bidder.budget += @auction.current_price
+				@former_highest_bidder.blocked_budget -= @auction.current_price
+				@former_highest_bidder.save! unless @former_highest_bidder == self # avoid transaction issues
+			end
 			# Update Auction with new bid
 			@auction.best_bidder = self
 			@auction.current_price = bid_amount

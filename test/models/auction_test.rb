@@ -16,6 +16,8 @@ class AuctionTest < ActiveSupport::TestCase
   	@guitar_auction = auctions(:guitar)
   	@closed_auction = auctions(:closed_auction)
   	@matt = users(:matt)
+    @pam = users(:pam)
+    @guitar = items(:guitar)
   end
 
   ##################
@@ -29,13 +31,9 @@ class AuctionTest < ActiveSupport::TestCase
   	assert @guitar_auction.finish
   end
 
-  test "should return false if auction is already closed" do
-  	assert_not @closed_auction.finish
-  end
-
   test "should return appropriate error message if auction has already closed" do
-  	@closed_auction.finish
-  	assert_equal "auction is already closed", @closed_auction.errors[:error].first
+    exception = assert_raise(Auction::AuctionError) {@closed_auction.finish}
+    assert_equal "auction has already closed", exception.message
   end
 
   test "should have matt as highest bidder" do
@@ -49,12 +47,15 @@ class AuctionTest < ActiveSupport::TestCase
   end
 
   test "should return appropriate data when auction closes" do 
+    @pam.bid @guitar.id, 25 # big bid for pam
+    @guitar_auction.reload
   	@guitar_auction.finish
+    @guitar_auction.reload  
   	data = {}
-  	data[:winner_id] = users(:matt).id
-  	data[:price] = 12.99
-   	assert_equal data[:winner_id], @guitar_auction.auction_data[:winner_id]
-   	assert_equal data[:price], @guitar_auction.auction_data[:price]
+  	data[:winner_id] = @pam.id
+  	data[:price] = 25
+   	assert_equal data[:winner_id], @guitar_auction.success_response_hash[:winner_id]
+   	assert_equal data[:price], @guitar_auction.success_response_hash[:price]
    end
   
   test "should add item_id to user's owned items" do

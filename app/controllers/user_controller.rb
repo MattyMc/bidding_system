@@ -18,6 +18,13 @@ class UserController < ApplicationController
     render json:{result: "error", error: e.message}, status: :bad_request
   end
 
+  # TODO: Find a better place for this
+  def snapshot
+    render json:{result:"success", data:{auctions: Auction.snapshot, users:User.snapshot}}, response: :success
+  rescue StandardError => e
+    render json:{result: "error", error:e.message}, status: :bad_request
+  end  
+
   private 
 
   def user_params
