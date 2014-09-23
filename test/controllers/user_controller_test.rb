@@ -31,6 +31,11 @@ class UserControllerTest < ActionController::TestCase
     assert_not_nil json_response["data"]
   end
 
+  test "should raise an exception in add_user if duplicate id" do
+    get :add_user, {user_id: @matt.id, budget: 0}
+    assert_response :bad_request
+  end
+
   test "should not add_user if missing user_id" do
     get :add_user, {budget: 0}
     assert_response :bad_request

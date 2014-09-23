@@ -197,9 +197,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "should not create a new item when item_name is empty" do
-    @matt.create_item_and_auction "", "22.39"
-    assert !@matt.errors.empty?
-    assert @matt.errors.full_messages.include? "Name can't be blank"
+    assert_raise(ActiveRecord::RecordInvalid) {@matt.create_item_and_auction "", "22.39"}
     auction = Auction.find_by_current_price 22.39
     assert auction.nil?
     item = Item.find_by_start_price 22.39
@@ -207,9 +205,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "should not create a new item when item_name is nil" do
-    @matt.create_item_and_auction nil, "22.39"
-    assert !@matt.errors.empty?
-    assert @matt.errors.full_messages.include? "Name can't be blank"
+    assert_raise(ActiveRecord::RecordInvalid) {@matt.create_item_and_auction nil, "22.39"}
     auction = Auction.find_by_current_price 22.39
     assert auction.nil?
     item = Item.find_by_start_price 22.39
@@ -217,8 +213,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "should not create a new item when start_price is invalid" do
-    @matt.create_item_and_auction "blah", 1.123
-    assert !@matt.errors.empty?
+    assert_raise(ActiveRecord::RecordInvalid) {@matt.create_item_and_auction "blah", 1.123}
     auction = Auction.find_by_current_price 1.123
     assert auction.nil?
     item = Item.find_by_name "blah"
@@ -226,8 +221,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "should not create a new item when start_price is nil" do
-    @matt.create_item_and_auction "blah", nil
-    assert !@matt.errors.empty?
+    assert_raise(ActiveRecord::RecordInvalid) {@matt.create_item_and_auction "blah", nil}
     auction = Auction.find_by_current_price nil
     assert auction.nil?
     item = Item.find_by_name "blah"
@@ -235,8 +229,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "should not create a new item when start_price is empty" do
-    @matt.create_item_and_auction 11.23, ""
-    assert !@matt.errors.empty?
+    assert_raise(ActiveRecord::RecordInvalid) {@matt.create_item_and_auction 11.23, ""}
     auction = Auction.find_by_current_price 11.23
     assert auction.nil?
     item = Item.find_by_start_price 11.23

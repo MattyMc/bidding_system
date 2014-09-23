@@ -1,8 +1,10 @@
 class User < ActiveRecord::Base
+	# Relationships -----------------------------------------------------------------------------
 	has_many :items
 	has_many :auctions
 	has_many :best_bids, :class_name => 'Auction', :foreign_key => 'best_bidder_id'
 
+	# Validations -------------------------------------------------------------------------------
 	validates :id, :budget, :blocked_budget, presence: true
 	validates_each :budget, :blocked_budget, on: :create do |record, attr, value|
 		v = value.to_f*100
@@ -12,46 +14,28 @@ class User < ActiveRecord::Base
 	validates :blocked_budget, numericality: { greater_than_or_equal_to: 0 }
 	# TODO: Validate that each owned_item is unique
 
-	serialize :owned_item_ids, Array  # treat property as array
-
+	# Errors -------------------------------------------------------------------------------------
 	class InvalidBid < StandardError
 	end
 
-	# Adds a new item and corresponding auction to the database
-	# TODO: ROLL THIS INTO ONE TRANSACTION
+	# Serialization ------------------------------------------------------------------------------
+	serialize :owned_item_ids, Array  # treat property as array
+
+
+
+	# -------------------------------------------------------------------------------------------
+	# Instance methods --------------------------------------------------------------------------
+	# -------------------------------------------------------------------------------------------
+
+	# TODO: Roll this into one transaction
+	# TODO: Deal with situation where user creates multiple items with same name
+	# Called from add_itme in user controller
 	def create_item_and_auction item_name, start_price
-		item = Item.create user:self, name:item_name, start_price:start_price
-		# Check for errors with item - if errors exist add them to the user and return
-		if !item.errors.empty? 
-			item.errors.messages.each do |key, val| 
-				self.errors.add(key, val[0])
-			end
-			return self
-		end
-
-		# create corresponding auction, check for errors as above
-		auction = Auction.create item_id:item.id, user:item.user, current_price:item.start_price, is_active:true
-		if !auction.errors.empty? 
-			auction.errors.messages.each do |key, val| 
-				self.errors.add(key, val[0])
-			end
-			return self
-		end
-
-		return self
+		item = Item.create! user:self, name:item_name, start_price:start_price
+		auction = Auction.create! item_id:item.id, user:item.user, current_price:item.start_price, is_active:true
+		item
 	end
-	# def add_item item_name, start_price
-	# 	# Errors occur instantiating BigDecimal object from a float
-	# 	start_price = start_price.to_s unless start_price.class == String 
-	# 	start_price = BigDecimal.new start_price
 
- #  		@item = Item.create! user:self, name:item_name, start_price:start_price
-  	
-	# 	Auction.create! item: @item, user: self, current_price: @item.start_price, is_active:true, best_bidder: nil
-	# end
-
-	# Method returns true if bid is accepted, false if bid is not accepted (or raises exception)
-	# Errors are stored in class instance (self.errors[:error])
 	def bid item_id, amount
 		# Errors occur instantiating BigDecimal object from a float
 		amount = amount.to_s unless amount.class == String 
@@ -89,8 +73,11 @@ class User < ActiveRecord::Base
 			# Save user
 			self.save!
 		end
-		return self
 	end
+
+	# -------------------------------------------------------------------------------------------
+	# Class methods -----------------------------------------------------------------------------
+	# -------------------------------------------------------------------------------------------
 
 	def self.snapshot
 		users = []
@@ -100,6 +87,22 @@ class User < ActiveRecord::Base
 		users
 	end
 
+
+	# -------------------------------------------------------------------------------------------
+	# Helper Methods  ---------------------------------------------------------------------------
+	# -------------------------------------------------------------------------------------------
+	# TODO: Make these private
+	def bid_amount_above_current_price? current_price, bid_amount
+		return true if bid_amount > current_price
+		false
+	end
+
+	def sufficient_funds? bid_amount
+		return true if  self.budget >= bid_amount 
+		false
+	end
+
+	# JSON Helper Methods -----------------------------------------------------------------------
 	# Will format JSON response in the following format
 	# {
  	#    result : "success" | "error"
@@ -110,25 +113,15 @@ class User < ActiveRecord::Base
 	#        data hash contains user information
 	def response_json
 		response = {}
-		if self.errors.empty?
-			response[:result] = "success"
-			response[:data] = self.attributes.except("created_at", "updated_at")
-		else
-			response[:result] = "error"
-			response[:error] = self.errors.full_messages.join ", "
-		end
+		response[:result] = "success"
+		response[:data] = self.attributes.except("created_at", "updated_at")
 		response
 	end
 
-	def response_json_add_item item_name
+	def response_json_add_item item_id
 		response = {}
-		if self.errors.empty?
-			response[:result] = "success"
-			response[:data] = Item.find_by_name(item_name).id
-		else
-			response[:result] = "error"
-			response[:error] = self.errors.full_messages.join ", "
-		end
+		response[:result] = "success"
+		response[:data] = item_id
 		response
 	end
 
@@ -137,13 +130,4 @@ class User < ActiveRecord::Base
 		return :ok if self.errors.empty?
 	end
 
-	def bid_amount_above_current_price? current_price, bid_amount
-		return true if bid_amount > current_price
-		false
-	end
-
-	def sufficient_funds? bid_amount
-		return true if  self.budget >= bid_amount 
-		false
-	end
 end
