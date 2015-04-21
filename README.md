@@ -1,6 +1,6 @@
 # Joist - Bidding System Application
 
-This is a working rails application built as a programming exercise. Deploying this application creates an API to respond to specific HTTP GET requests, as defined through the provided documentation (not included). This application uses GIT for version control and employs a postgres database. It features loose coupling (ie fat models and skinny controllers), MVCC to preserve data integrity and has pre-cooked unit tests for models and functional tests controllers (although test coverage is not 100%). 
+This is a working rails application built as a programming exercise. Deploying this application creates an API to respond to specific HTTP GET requests, as defined through the provided documentation (not included).  
 
 All responses have the following structure:
 
