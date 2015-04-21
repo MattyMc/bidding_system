@@ -1,4 +1,6 @@
 BiddingSystem::Application.routes.draw do
+  resources :user
+
   get "auction/finish"
   get "add_user" => "user#add_user"
   get "add_item" => "user#add_item"

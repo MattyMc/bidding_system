@@ -1,0 +1,11 @@
+Tue, 23 Sep 2014 17:28:47 -0400
+README.rdoc	Mon, 07 Jul 2014 13:47:39 -0400
+app/controllers/application_controller.rb	Sat, 06 Sep 2014 13:29:29 -0400
+app/controllers/auction_controller.rb	Tue, 23 Sep 2014 17:08:43 -0400
+app/controllers/user_controller.rb	Tue, 23 Sep 2014 16:01:32 -0400
+app/helpers/application_helper.rb	Mon, 07 Jul 2014 13:47:39 -0400
+app/helpers/auction_helper.rb	Mon, 07 Jul 2014 14:21:32 -0400
+app/helpers/user_helper.rb	Mon, 07 Jul 2014 14:21:10 -0400
+app/models/auction.rb	Sat, 06 Sep 2014 13:40:00 -0400
+app/models/item.rb	Tue, 19 Aug 2014 20:08:25 -0400
+app/models/user.rb	Tue, 23 Sep 2014 16:04:54 -0400

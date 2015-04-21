@@ -38,8 +38,8 @@ class AuctionControllerTest < ActionController::TestCase
 
   test "should respond with appropriate error message when auction is unsuccessfully ended" do
     get :finish, {item_id:@closed_auction.item.id}
-    assert_equal json_response["result"], "error"
-    assert json_response["error"].include? "auction has already closed"
+    # assert_equal json_response["result"], "error"
+    assert_equal json_response["error"], "auction has already closed"
   end
 
   test "should return an error if no auction found for item_id" do

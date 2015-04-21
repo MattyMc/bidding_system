@@ -14,7 +14,7 @@ class User < ActiveRecord::Base
 	validates :blocked_budget, numericality: { greater_than_or_equal_to: 0 }
 	# TODO: Validate that each owned_item is unique
 
-	# Errors -------------------------------------------------------------------------------------
+	# Errors ------------------------------------------------------------------------------------
 	class InvalidBid < StandardError
 	end
 
